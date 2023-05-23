@@ -45,9 +45,8 @@ def make_instance_dict(
     Returns:
       Dictionary of instances in the format accepted by the preprocessor.
     """
-    instances = [s for s in base64_encodings]
-    for path in image_paths:
-        instances.append(b64_encode_file(path))
+    instances = list(base64_encodings)
+    instances.extend(b64_encode_file(path) for path in image_paths)
     return {"instances": instances}
 
 

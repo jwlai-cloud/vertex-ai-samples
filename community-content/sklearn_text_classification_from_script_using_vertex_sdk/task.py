@@ -150,7 +150,7 @@ if __name__ == "__main__":
     logging.info("Starting custom training job.")
 
     # download the data from url
-    logging.info("Downloading training data from: {}".format(arguments["dataset_url"]))
+    logging.info(f'Downloading training data from: {arguments["dataset_url"]}')
     dataframe = download_dataset_from_url(arguments["dataset_url"])
     train_test_data = get_train_test_data(dataframe)
 

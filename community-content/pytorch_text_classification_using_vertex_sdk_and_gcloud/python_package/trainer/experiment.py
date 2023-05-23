@@ -115,10 +115,10 @@ def run(args):
 
     label_list = train_dataset.unique("label")
     num_labels = len(label_list)
-    
+
     # Create the model, loss function, and optimizer
     text_classifier = model.create(num_labels=num_labels)
-    
+
     # Train / Test the model
     trainer = train(args, text_classifier, train_dataset, test_dataset)
 
@@ -133,5 +133,7 @@ def run(args):
         utils.save_model(args)
     else:
         print(f"Saved model files at {os.path.join('/tmp', args.model_name)}")
-        print(f"To save model files in GCS bucket, please specify job_dir starting with gs://")
+        print(
+            "To save model files in GCS bucket, please specify job_dir starting with gs://"
+        )
 

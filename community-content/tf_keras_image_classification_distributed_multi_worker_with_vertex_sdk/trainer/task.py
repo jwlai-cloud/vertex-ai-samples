@@ -52,9 +52,7 @@ def parse_args():
   parser.add_argument(
       '--local-mode', action='store_true', help='use local mode when running on your local machine')
 
-  args = parser.parse_args()
-
-  return args
+  return parser.parse_args()
 
 def load_dataset(batch_size):
   (x_train, y_train), _ = tf.keras.datasets.mnist.load_data()
@@ -62,9 +60,8 @@ def load_dataset(batch_size):
   # You need to convert them to float32 with values in the [0, 1] range.
   x_train = x_train / np.float32(255)
   y_train = y_train.astype(np.int64)
-  train_dataset = tf.data.Dataset.from_tensor_slices(
-      (x_train, y_train)).shuffle(60000).batch(batch_size)
-  return train_dataset
+  return (tf.data.Dataset.from_tensor_slices(
+      (x_train, y_train)).shuffle(60000).batch(batch_size))
 
 def build_model():
   model = tf.keras.Sequential([
@@ -156,8 +153,7 @@ def main():
 
   with strategy.scope():
     model = build_model()
-    latest_ckpt = tf.train.latest_checkpoint(checkpoint_dir)
-    if latest_ckpt:
+    if latest_ckpt := tf.train.latest_checkpoint(checkpoint_dir):
       model.load_weights(latest_ckpt)
 
   train(

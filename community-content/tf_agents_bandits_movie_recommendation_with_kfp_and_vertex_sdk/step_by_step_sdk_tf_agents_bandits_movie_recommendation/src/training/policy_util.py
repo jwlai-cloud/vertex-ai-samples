@@ -78,8 +78,8 @@ def train(agent: TFAgent,
     A dict mapping metric names (eg. "AverageReturnMetric") to a list of
     intermediate metric values over `training_loops` iterations of training.
   """
-  if run_hyperparameter_tuning and not (root_dir is None and
-                                        artifacts_dir is None):
+  if run_hyperparameter_tuning and (root_dir is not None
+                                    or artifacts_dir is not None):
     raise ValueError("Do not specify `root_dir` or `artifacts_dir` when" +
                      " running hyperparameter tuning.")
 

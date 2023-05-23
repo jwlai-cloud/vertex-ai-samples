@@ -189,7 +189,7 @@ def parse_dir(directory: str) -> int:
         Returns the numbern of errors
     """
     exit_code = 0
-    
+
     sorted_entries = []
     entries = os.scandir(directory)
     for entry in entries:
@@ -200,16 +200,16 @@ def parse_dir(directory: str) -> int:
                 sorted_entries.insert(ix, entry)
                 inserted = True
                 break
-        
+
         if not inserted:
             sorted_entries.append(entry)
-    
+
     entries = sorted_entries
     for entry in entries:
         if entry.is_dir():
             if entry.name[0] == '.':
                 continue
-            if entry.name == 'src' or entry.name == 'images' or entry.name == 'sample_data':
+            if entry.name in ['src', 'images', 'sample_data']:
                 continue
             exit_code += parse_dir(entry.path)
         elif entry.name.endswith('.ipynb'):
@@ -260,13 +260,13 @@ def parse_dir(directory: str) -> int:
                 tag = 'Vertex AI Training'
             elif tag == 'vizier':
                 tag = 'Vertex AI Vizier'
-                
+
             # special case
             if 'workbench' in directory:
                 tag = 'Vertex AI Workbench'
-                
+
             exit_code += parse_notebook(entry.path, tags=[tag], linkback=None, rules=rules)
-            
+
     return exit_code
 
 
@@ -286,24 +286,20 @@ def parse_notebook(path: str,
         Returns the number of errors
     """
     notebook = Notebook(path)
-    
+
     for rule in rules:
         rule.validate(notebook)
 
-    
+
     # Automatic Index Generation
     if objective.desc != '':
         if overview.linkbacks:
             linkbacks = overview.linkbacks
         else:
-            if linkback:
-                linkbacks = [linkback]
-            else:
-                linkbacks = []
-
+            linkbacks = [linkback] if linkback else []
         if overview.tags:
             tags = overview.tags
-                
+
         add_index(path, 
                   tags, 
                   linkbacks,
@@ -315,10 +311,10 @@ def parse_notebook(path: str,
                   links.colab_link, 
                   links.workbench_link
         )
-        
+
     if args.fix:
         notebook.writeback()
-        
+
     return notebook.num_errors
 
 class Notebook(object):
@@ -364,8 +360,7 @@ class Notebook(object):
         
         Returns the current cell
         '''
-        cell = self._cells[self._cell_index]
-        return cell
+        return self._cells[self._cell_index]
     
 
     def pop(self, n_cells=1):
@@ -472,7 +467,7 @@ class CopyrightRule(NotebookRule):
         Parse the copyright cell
         """
         cell = notebook.get()
-        if not 'Copyright' in cell['source'][0]:
+        if 'Copyright' not in cell['source'][0]:
             return notebook.report_error(ErrorCode.ERROR_COPYRIGHT, "missing copyright cell")
         return True
 
@@ -594,27 +589,26 @@ class TestEnvRule(NotebookRule):
 
 
 class OverviewRule(NotebookRule):
-    def validate(self, notebook: Notebook) -> bool: 
+    def validate(self, notebook: Notebook) -> bool:
         """
         Parse the overview cell
         """
         self.linkbacks = []
         self.tags = []
-        
+
         cell = notebook.get()
         if not cell['source'][0].startswith("## Overview"):
             return notebook.report_error(ErrorCode.ERROR_OVERVIEW_NOTFOUND, "Overview section not found")
-        
+
         last_line = cell['source'][-1]
-        if last_line.startswith('Learn more about ['):
-            for more in last_line.split('[')[1:]:
-                tag = more.split(']')[0]
-                linkback = more.split('(')[1].split(')')[0]
-                self.tags.append(tag)
-                self.linkbacks.append(linkback)
-        else:
+        if not last_line.startswith('Learn more about ['):
             return notebook.report_error(ErrorCode.ERROR_LINKBACK_NOTFOUND, "Linkback missing in overview section")
-                
+
+        for more in last_line.split('[')[1:]:
+            tag = more.split(']')[0]
+            linkback = more.split('(')[1].split(')')[0]
+            self.tags.append(tag)
+            self.linkbacks.append(linkback)
         return True
 
 
@@ -761,19 +755,17 @@ class DatasetRule(NotebookRule):
 
 
 class CostsRule(NotebookRule):
-    def validate(self, notebook: Notebook) -> bool: 
+    def validate(self, notebook: Notebook) -> bool:
         """
         Parse the costs cell
         """
         ret = True
-        
+
         cell = notebook.get()
         if not cell['source'][0].startswith("### Costs"):
             ret = notebook.report_error(ErrorCode.ERROR_COSTS_NOTFOUND, "Costs section not found")
         else:
-            text = ''
-            for line in cell['source']:
-                text += line
+            text = ''.join(cell['source'])
             if 'BQ' in notebook.costs and 'BigQuery' not in text:
                 ret = notebook.report_error(ErrorCode.ERROR_COSTS_MISSING, 'Costs section missing reference to BiqQuery')
             if 'Vertex' in notebook.costs and 'Vertex' not in text:
@@ -908,16 +900,14 @@ class BeforeBeginRule(NotebookRule):
         Parse the before you begin cell
         """
         ret = True
-        
+
         cell = notebook.get()
         if not cell['source'][0].startswith("## Before you begin"):
             ret = notebook.report_error(ErrorCode.ERROR_BEFOREBEGIN_NOTFOUND, "Before you begin section not found")
-        else:
-            # is two cells instead of one
-            if len(cell['source']) < 2:
-                cell = notebook.get()
-                if not cell['source'][0].startswith("### Set up your Google Cloud project"):
-                    ret = notebook.report_error(ErrorCode.ERROR_BEFOREBEGIN_INCOMPLETE, "Before you begin section incomplete")
+        elif len(cell['source']) < 2:
+            cell = notebook.get()
+            if not cell['source'][0].startswith("### Set up your Google Cloud project"):
+                ret = notebook.report_error(ErrorCode.ERROR_BEFOREBEGIN_INCOMPLETE, "Before you begin section incomplete")
         return ret
 
 
@@ -1124,15 +1114,15 @@ def add_index(path: str,
         linkbacks: The linkbacks per tag
     """
     global last_tag
-    
+
     if not args.web and not args.repo:
         return
-    
+
     title = title.split(':')[-1].strip()
     title = title[0].upper() + title[1:]
     if args.web:
         title = replace_cl(title.replace('`', ''))
-        
+
         print('    <tr>')
         print('        <td>')
         for tag in tags:
@@ -1145,8 +1135,8 @@ def add_index(path: str,
             desc = replace_cl(desc.replace('`', ''))
             print('<br/>')
             print(f'            {desc}\n')
-            
-            
+
+
         if args.linkback and linkbacks:
             num = len(tags)
             for _ in range(num):
@@ -1154,22 +1144,22 @@ def add_index(path: str,
                     print(f' Learn more about <a href="https://cloud.google.com/{linkbacks[_]}" target="_blank">{replace_cl(tags[_])}</a>.\n')
                 else:
                     print(f' Learn more about <a href="{linkbacks[_]}" target="_blank">{replace_cl(tags[_])}</a>.\n')
-                    
+
         if args.steps:
             print("<devsite-expandable>\n")
             print('  <p class="showalways">Tutorial steps</p>\n')
             print('  <ul>\n')
-            
+
             if ":" in steps:
                 steps = steps.split(':')[1].replace('*', '').replace('-', '').strip().split('\n')
             else:
                 steps = []
-              
+
             for step in steps:
                 print(f'    <li>{replace_cl(step)}</li>\n')
             print('  </ul>\n')
             print("</devsite-expandable>\n")
-                    
+
         print('        </td>')
         print('        <td>')
         if colab_link:
@@ -1184,14 +1174,12 @@ def add_index(path: str,
         try:
             if tags != last_tag and tag != '':
                 last_tag = tags
-                flat_list = ''
-                for item in tags:
-                    flat_list += item.replace("'", '') + ' '
+                flat_list = ''.join(item.replace("'", '') + ' ' for item in tags)
                 print(f"\n### {flat_list}\n")
         except:
             pass
         print(f"\n[{title}]({git_link})\n")
-    
+
         print("```")
         if args.desc:
             print(desc)
@@ -1201,9 +1189,9 @@ def add_index(path: str,
 
         if args.steps:
             print(steps.rstrip() + '\n')
-            
+
         print("```\n")
-            
+
         if args.linkback and linkbacks:
             num = len(tags)
             for _ in range(num):

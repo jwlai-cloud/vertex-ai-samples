@@ -39,12 +39,12 @@ def train_tabular_regression_linear_model_using_Scikit_learn_pipeline():
         label_column_name=label_column,
     ).outputs["model"]
 
-    vertex_model_name = upload_Scikit_learn_pickle_model_to_Google_Cloud_Vertex_AI_op(
-        model=model,
-    ).outputs["model_name"]
-
     # Deploying the model might incur additional costs over time
     if deploy_model:
+        vertex_model_name = upload_Scikit_learn_pickle_model_to_Google_Cloud_Vertex_AI_op(
+            model=model,
+        ).outputs["model_name"]
+
         sklearn_vertex_endpoint_name = deploy_model_to_endpoint_op(
             model_name=vertex_model_name,
         ).outputs["endpoint_name"]

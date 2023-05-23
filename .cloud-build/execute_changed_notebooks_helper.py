@@ -194,13 +194,11 @@ def _get_notebook_python_version(notebook_path: str) -> str:
         if cell["cell_type"] == "markdown":
             markdown = str.join("", cell["source"])
 
-            # Look for the python version specification pattern
-            re_match = re.search(
+            if re_match := re.search(
                 "python version = (\d\.\d)", markdown, flags=re.IGNORECASE
-            )
-            if re_match:
+            ):
                 # get the version number
-                python_version = re_match.group(1)
+                python_version = re_match[1]
                 break
 
     return python_version
@@ -353,9 +351,9 @@ def get_changed_notebooks(
     with open(test_paths_file) as file:
         lines = [line.strip() for line in file.readlines()]
         lines = [line for line in lines if len(line) > 0]
-        test_paths = [line for line in lines]
+        test_paths = list(lines)
 
-    if len(test_paths) == 0:
+    if not test_paths:
         raise RuntimeError("No test folders found.")
 
     print(f"Checking folders: {test_paths}")
@@ -383,7 +381,7 @@ def get_changed_notebooks(
         else:
             notebooks = []
     else:
-        print(f"Looking for all notebooks.")
+        print("Looking for all notebooks.")
         notebooks_str = subprocess.check_output(["git", "ls-files"] + test_paths)
         notebooks = notebooks_str.decode("utf-8").split("\n")
 
@@ -391,7 +389,7 @@ def get_changed_notebooks(
     notebooks = [notebook for notebook in notebooks if len(notebook) > 0]
     notebooks = [notebook for notebook in notebooks if pathlib.Path(notebook).exists()]
 
-    if len(notebooks) > 0:
+    if notebooks:
         print(f"Found {len(notebooks)} notebooks:")
         for notebook in notebooks:
             print(f"\t{notebook}")
@@ -426,7 +424,7 @@ def _save_results(results: List[NotebookExecutionResult],
 
     client = storage.Client()
     bucket = client.get_bucket(artifacts_bucket)
-    bucket.blob(str(results_file)).upload_from_string(content, 'text/json')
+    bucket.blob(results_file).upload_from_string(content, 'text/json')
 
 
 
@@ -480,7 +478,7 @@ def process_and_execute_notebooks(
         seconds=max(timeout - WORKER_TIMEOUT_BUFFER_IN_SECONDS, 0)
     )
 
-    if len(notebooks) >= 1:
+    if notebooks:
         notebook_execution_results: List[NotebookExecutionResult] = []
 
         print(f"Found {len(notebooks)} modified notebooks: {notebooks}")
@@ -602,7 +600,7 @@ def process_and_execute_notebooks(
         )
 
         # Raise error if any notebooks failed
-        if not all([result.is_pass for result in results_sorted]):
+        if not all(result.is_pass for result in results_sorted):
             raise RuntimeError("Notebook failures detected. See logs for details")
     else:
         print("No notebooks modified in this pull request.")

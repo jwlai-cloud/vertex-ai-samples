@@ -22,10 +22,6 @@ def create(num_labels):
     Args:
       num_labels: number of target labels
     """
-    # Create the model, loss function, and optimizer
-    model = AutoModelForSequenceClassification.from_pretrained(
-        metadata.PRETRAINED_MODEL_NAME,
-        num_labels=num_labels
+    return AutoModelForSequenceClassification.from_pretrained(
+        metadata.PRETRAINED_MODEL_NAME, num_labels=num_labels
     )
-    
-    return model

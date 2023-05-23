@@ -60,19 +60,19 @@ def train_tabular_regression_model_using_PyTorch_pipeline():
         #random_seed=0,
     ).outputs["trained_model"]
 
-    model_archive = create_pytorch_model_archive_with_base_handler_op(
-        model=model,
-        # Optional:
-        # model_name="model",
-        # model_version="1.0",
-    ).outputs["Model archive"]
-
-    vertex_model_name = upload_PyTorch_model_archive_to_Google_Cloud_Vertex_AI_op(
-        model_archive=model_archive,
-    ).outputs["model_name"]
-
     # Deploying the model might incur additional costs over time
     if deploy_model:
+        model_archive = create_pytorch_model_archive_with_base_handler_op(
+            model=model,
+            # Optional:
+            # model_name="model",
+            # model_version="1.0",
+        ).outputs["Model archive"]
+
+        vertex_model_name = upload_PyTorch_model_archive_to_Google_Cloud_Vertex_AI_op(
+            model_archive=model_archive,
+        ).outputs["model_name"]
+
         vertex_endpoint_name = deploy_model_to_endpoint_op(
             model_name=vertex_model_name,
         ).outputs["endpoint_name"]

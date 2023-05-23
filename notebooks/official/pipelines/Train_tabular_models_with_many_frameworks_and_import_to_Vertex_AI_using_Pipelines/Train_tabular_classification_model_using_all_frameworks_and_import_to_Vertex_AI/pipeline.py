@@ -206,12 +206,12 @@ def train_tabular_classification_model_using_all_frameworks_pipeline():
         #random_seed=0,
     ).outputs["model"]
 
-    sklearn_vertex_model_name = upload_Scikit_learn_pickle_model_to_Google_Cloud_Vertex_AI_op(
-        model=sklearn_model,
-    ).outputs["model_name"]
-
     # Deploying the model might incur additional costs over time
     if deploy_model:
+        sklearn_vertex_model_name = upload_Scikit_learn_pickle_model_to_Google_Cloud_Vertex_AI_op(
+            model=sklearn_model,
+        ).outputs["model_name"]
+
         sklearn_vertex_endpoint_name = deploy_model_to_endpoint_op(
             model_name=sklearn_vertex_model_name,
         ).outputs["endpoint_name"]

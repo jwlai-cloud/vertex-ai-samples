@@ -57,9 +57,7 @@ def parse_args():
   parser.add_argument(
       '--local-mode', action='store_true', help='use local mode when running on your local machine')
 
-  args = parser.parse_args()
-
-  return args
+  return parser.parse_args()
 
 def makedirs(model_dir):
   if os.path.exists(model_dir) and os.path.isdir(model_dir):
@@ -127,7 +125,7 @@ def train(model, criterion, optimizer, scheduler, dataset_sizes, dataloaders, de
   best_acc = 0.0
 
   for epoch in range(epochs):
-    print('Epoch {}/{}'.format(epoch, epochs - 1))
+    print(f'Epoch {epoch}/{epochs - 1}')
     print('-' * 10)
 
     # Each epoch has a training and validation phase
@@ -173,7 +171,7 @@ def train(model, criterion, optimizer, scheduler, dataset_sizes, dataloaders, de
         writer.add_scalar('Loss/train', epoch_loss, epoch)
         writer.add_scalar('Accuracy/train', epoch_acc, epoch)
 
-      if phase == 'val':
+      elif phase == 'val':
         writer.add_scalar('Loss/test', epoch_loss, epoch)
         writer.add_scalar('Accuracy/test', epoch_acc, epoch)
 

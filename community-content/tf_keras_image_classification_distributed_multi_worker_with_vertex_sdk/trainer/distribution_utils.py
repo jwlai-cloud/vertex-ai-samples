@@ -57,7 +57,7 @@ def _is_chief(task_type, task_id):
   return (task_type == 'worker' and task_id == 0) or task_type is None
 
 def _get_temp_dir(dirpath, task_id):
-  base_dirpath = 'workertemp_' + str(task_id)
+  base_dirpath = f'workertemp_{str(task_id)}'
   temp_dir = os.path.join(dirpath, base_dirpath)
   tf.io.gfile.makedirs(temp_dir)
   return temp_dir

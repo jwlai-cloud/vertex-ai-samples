@@ -85,8 +85,7 @@ def create_args():
       default=300 * 1024 * 1024,
       type=int,
       help='max bytes per shard')
-  args = parser.parse_args()
-  return args
+  return parser.parse_args()
 
 
 def main():

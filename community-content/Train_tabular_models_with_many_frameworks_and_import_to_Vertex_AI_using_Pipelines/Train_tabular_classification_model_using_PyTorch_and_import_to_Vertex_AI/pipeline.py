@@ -20,7 +20,6 @@ def train_tabular_classification_model_using_PyTorch_pipeline():
     # Deploying the model might incur additional costs over time
     deploy_model = False
 
-    classification_label_column = "class"
     all_columns = [label_column] + feature_columns
 
     training_data = download_from_gcs_op(
@@ -39,50 +38,51 @@ def train_tabular_classification_model_using_PyTorch_pipeline():
         #replacement_type_name="float",
     ).outputs["transformed_table"]
 
-    classification_training_data = binarize_column_using_Pandas_on_CSV_data_op(
-        table=training_data,
-        column_name=label_column,
-        predicate=" > 0",
-        new_column_name=classification_label_column,
-    ).outputs["transformed_table"]
-
-    network = create_fully_connected_pytorch_network_op(
-        input_size=len(feature_columns),
-        # Optional:
-        hidden_layer_sizes=[10],
-        activation_name="elu",
-        output_activation_name="sigmoid",
-        # output_size=1,
-    ).outputs["model"]
-
-    model = train_pytorch_model_from_csv_op(
-        model=network,
-        training_data=classification_training_data,
-        label_column_name=classification_label_column,
-        loss_function_name="binary_cross_entropy",
-        # Optional:
-        #number_of_epochs=1,
-        #learning_rate=0.1,
-        #optimizer_name="Adadelta",
-        #optimizer_parameters={},
-        #batch_size=32,
-        #batch_log_interval=100,
-        #random_seed=0,
-    ).outputs["trained_model"]
-
-    model_archive = create_pytorch_model_archive_with_base_handler_op(
-        model=model,
-        # Optional:
-        # model_name="model",
-        # model_version="1.0",
-    ).outputs["Model archive"]
-
-    vertex_model_name = upload_PyTorch_model_archive_to_Google_Cloud_Vertex_AI_op(
-        model_archive=model_archive,
-    ).outputs["model_name"]
-
     # Deploying the model might incur additional costs over time
     if deploy_model:
+        classification_label_column = "class"
+        classification_training_data = binarize_column_using_Pandas_on_CSV_data_op(
+            table=training_data,
+            column_name=label_column,
+            predicate=" > 0",
+            new_column_name=classification_label_column,
+        ).outputs["transformed_table"]
+
+        network = create_fully_connected_pytorch_network_op(
+            input_size=len(feature_columns),
+            # Optional:
+            hidden_layer_sizes=[10],
+            activation_name="elu",
+            output_activation_name="sigmoid",
+            # output_size=1,
+        ).outputs["model"]
+
+        model = train_pytorch_model_from_csv_op(
+            model=network,
+            training_data=classification_training_data,
+            label_column_name=classification_label_column,
+            loss_function_name="binary_cross_entropy",
+            # Optional:
+            #number_of_epochs=1,
+            #learning_rate=0.1,
+            #optimizer_name="Adadelta",
+            #optimizer_parameters={},
+            #batch_size=32,
+            #batch_log_interval=100,
+            #random_seed=0,
+        ).outputs["trained_model"]
+
+        model_archive = create_pytorch_model_archive_with_base_handler_op(
+            model=model,
+            # Optional:
+            # model_name="model",
+            # model_version="1.0",
+        ).outputs["Model archive"]
+
+        vertex_model_name = upload_PyTorch_model_archive_to_Google_Cloud_Vertex_AI_op(
+            model_archive=model_archive,
+        ).outputs["model_name"]
+
         vertex_endpoint_name = deploy_model_to_endpoint_op(
             model_name=vertex_model_name,
         ).outputs["endpoint_name"]
