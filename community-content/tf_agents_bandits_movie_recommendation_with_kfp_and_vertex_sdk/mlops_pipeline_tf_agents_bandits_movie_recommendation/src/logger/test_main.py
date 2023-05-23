@@ -284,7 +284,7 @@ class TestLogger(unittest.TestCase):
         predicted_actions=PREDICTED_ACTIONS)
 
     with open(self.bigquery_tmp_file, "r") as f:
-      newline_count = sum(1 for trajectory_json in f)
+      newline_count = sum(1 for _ in f)
     self.assertEqual(newline_count, self.mock_json_dumps.call_count)
 
     patcher_get_trajectory.stop()

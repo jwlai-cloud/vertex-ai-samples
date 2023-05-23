@@ -69,12 +69,13 @@ class TransformersClassifierHandler(BaseHandler):
 
         # Tokenize the texts
         tokenizer_args = ((sentences,))
-        inputs = self.tokenizer(*tokenizer_args,
-                                padding='max_length',
-                                max_length=128,
-                                truncation=True,
-                                return_tensors = "pt")
-        return inputs
+        return self.tokenizer(
+            *tokenizer_args,
+            padding='max_length',
+            max_length=128,
+            truncation=True,
+            return_tensors="pt"
+        )
 
     def inference(self, inputs):
         """ Predict the class of a text using a trained transformer model.

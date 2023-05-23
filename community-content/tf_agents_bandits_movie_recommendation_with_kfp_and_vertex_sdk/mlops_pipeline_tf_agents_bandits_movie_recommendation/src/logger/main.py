@@ -132,12 +132,11 @@ def get_trajectory_from_environment(
   # Get next time step.
   next_time_step = environment.current_time_step()
 
-  # Get trajectory as an encapsulation of all feedback from the environment.
-  trajectory = trajectories.from_transition(
+  return trajectories.from_transition(
       time_step=time_step,
       action_step=trajectories.PolicyStep(action=predicted_action),
-      next_time_step=next_time_step)
-  return trajectory
+      next_time_step=next_time_step,
+  )
 
 
 def build_dict_from_trajectory(
@@ -150,18 +149,23 @@ def build_dict_from_trajectory(
   Returns:
     A dict holding the same data as `trajectory`.
   """
-  trajectory_dict = {
-      "step_type": trajectory.step_type.numpy().tolist(),
+  return {
+      "step_type":
+      trajectory.step_type.numpy().tolist(),
       "observation": [{
           "observation_batch": batch
       } for batch in trajectory.observation.numpy().tolist()],
-      "action": trajectory.action.numpy().tolist(),
-      "policy_info": trajectory.policy_info,
-      "next_step_type": trajectory.next_step_type.numpy().tolist(),
-      "reward": trajectory.reward.numpy().tolist(),
-      "discount": trajectory.discount.numpy().tolist(),
+      "action":
+      trajectory.action.numpy().tolist(),
+      "policy_info":
+      trajectory.policy_info,
+      "next_step_type":
+      trajectory.next_step_type.numpy().tolist(),
+      "reward":
+      trajectory.reward.numpy().tolist(),
+      "discount":
+      trajectory.discount.numpy().tolist(),
   }
-  return trajectory_dict
 
 
 def write_trajectories_to_file(

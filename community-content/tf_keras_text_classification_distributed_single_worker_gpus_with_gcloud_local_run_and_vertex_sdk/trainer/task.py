@@ -53,9 +53,7 @@ def parse_args():
   parser.add_argument(
       '--local-mode', action='store_true', help='use local mode when running on your local machine')
 
-  args = parser.parse_args()
-
-  return args
+  return parser.parse_args()
 
 def download_data(data_dir):
   """Download data."""
@@ -71,9 +69,7 @@ def download_data(data_dir):
       cache_dir=data_dir,
       cache_subdir="",
   )
-  dataset_dir = os.path.join(os.path.dirname(dataset))
-
-  return dataset_dir
+  return os.path.join(os.path.dirname(dataset))
 
 
 def load_dataset(dataset_dir, batch_size, validation_split=0.2, seed=42):
@@ -161,8 +157,7 @@ def get_string_labels(predicted_scores_batch, class_names):
 
 def predict(export_model, class_names, inputs):
   predicted_scores = export_model.predict(inputs)
-  predicted_labels = get_string_labels(predicted_scores, class_names)
-  return predicted_labels
+  return get_string_labels(predicted_scores, class_names)
 
 def main():
 

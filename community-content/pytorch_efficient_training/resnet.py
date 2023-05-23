@@ -181,8 +181,7 @@ def create_args():
       default=32,
       type=int,
       help='batch size for evaluation')
-  args = parser.parse_args()
-  return args
+  return parser.parse_args()
 
 
 def main():

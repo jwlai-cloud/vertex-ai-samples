@@ -201,7 +201,7 @@ class TestGeneratorComponent(unittest.TestCase):
         bigquery_table_id=BIGQUERY_TABLE_ID)
 
     with open(self.bigquery_tmp_file, "r") as f:
-      newline_count = sum(1 for trajectory_json in f)
+      newline_count = sum(1 for _ in f)
     self.assertEqual(newline_count, self.mock_json_dumps.call_count)
 
   def test_query_dataset_with_num_trajectory_elements(self):

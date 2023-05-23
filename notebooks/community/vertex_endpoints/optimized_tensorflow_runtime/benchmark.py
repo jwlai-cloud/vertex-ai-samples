@@ -61,7 +61,7 @@ def benchmark_qps(send_request, requests, qps):
     acc_time = time.time() - start_time
 
     avg_miss_rate_percent = 0
-    if len(miss_rate_percent) > 0:
+    if miss_rate_percent:
         avg_miss_rate_percent = np.average(miss_rate_percent)
         logging.warning(
             "couldn't keep up at current QPS rate, average miss rate:{:.2f}%".format(
@@ -130,8 +130,7 @@ def benchmark(
         "error",
     ]
     merged_results = defaultdict(list)
-    for result in results:
-        for column in columns:
-            merged_results[column].append(result[column])
+    for result, column in itertools.product(results, columns):
+        merged_results[column].append(result[column])
 
     return merged_results

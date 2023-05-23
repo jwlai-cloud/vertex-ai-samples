@@ -28,13 +28,11 @@ def wds_split(src, rank, world_size):
   # can handle at least one shard, otherwise the process may hang.
   worker_id = 0
   num_workers = 1
-  worker_info = torch.utils.data.get_worker_info()
-  if worker_info:
+  if worker_info := torch.utils.data.get_worker_info():
     worker_id = worker_info.id
     num_workers = worker_info.num_workers
-  for s in itertools.islice(src, rank * num_workers + worker_id, None,
-                            world_size * num_workers):
-    yield s
+  yield from itertools.islice(src, rank * num_workers + worker_id, None,
+                              world_size * num_workers)
 
 
 def identity(x):
@@ -87,8 +85,9 @@ def create_wds_dataloader(rank, args, mode):
       batch_size=None,
       shuffle=False,
       num_workers=num_workers,
-      persistent_workers=True if num_workers > 0 else False,
-      pin_memory=True).repeat(nbatches=batches)
+      persistent_workers=num_workers > 0,
+      pin_memory=True,
+  ).repeat(nbatches=batches)
   print(f'{mode} dataloader | samples: {data_size}, '
         f'num_workers: {num_workers}, '
         f'local batch size: {batch_size_local}, '
@@ -222,8 +221,7 @@ def create_args():
       default=50000,
       type=int,
       help='data size for evaluation')
-  args = parser.parse_args()
-  return args
+  return parser.parse_args()
 
 
 def main():

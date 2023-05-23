@@ -72,9 +72,7 @@ def parse_args():
   parser.add_argument(
       '--local-mode', action='store_true', help='use local mode when running on your local machine')
 
-  args = parser.parse_args()
-
-  return args
+  return parser.parse_args()
 
 def makedirs(model_dir):
   if os.path.exists(model_dir) and os.path.isdir(model_dir):
@@ -182,7 +180,7 @@ class Trainer(object):
 
     for epoch in range(1, epochs + 1):
 
-      print('Epoch: {}, Training ...'.format(epoch))
+      print(f'Epoch: {epoch}, Training ...')
       train_loss, train_acc = self.train()
 
       if is_chief:
@@ -194,9 +192,9 @@ class Trainer(object):
         torch.save(self.model.state_dict(), self.checkpoint_path)
 
         print(
-            'Epoch: {}/{},'.format(epoch, epochs),
-            'train loss: {}, train acc: {},'.format(train_loss, train_acc),
-            'test loss: {}, test acc: {}.'.format(test_loss, test_acc),
+            f'Epoch: {epoch}/{epochs},',
+            f'train loss: {train_loss}, train acc: {train_acc},',
+            f'test loss: {test_loss}, test acc: {test_acc}.',
         )
 
   def train(self):
@@ -274,7 +272,7 @@ def main():
   print(f'checkpoint_path is {checkpoint_path}')
 
   if args.world_size > 1:
-    print('Initializing distributed backend with {} nodes'.format(args.world_size))
+    print(f'Initializing distributed backend with {args.world_size} nodes')
     distributed.init_process_group(
           backend=args.backend,
           init_method=args.init_method,
@@ -287,7 +285,7 @@ def main():
           f'backend={distributed.get_backend()} \n', end='')
 
   if torch.cuda.is_available() and not args.no_cuda:
-    device = torch.device('cuda:{}'.format(args.rank))
+    device = torch.device(f'cuda:{args.rank}')
   else:
     device = torch.device('cpu')
 

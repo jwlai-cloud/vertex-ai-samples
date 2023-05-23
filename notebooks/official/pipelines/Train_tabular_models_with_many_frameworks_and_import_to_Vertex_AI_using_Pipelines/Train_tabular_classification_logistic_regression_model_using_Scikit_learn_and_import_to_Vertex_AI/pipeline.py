@@ -18,7 +18,6 @@ def train_tabular_classification_logistic_regression_model_using_Scikit_learn_pi
     # Deploying the model might incur additional costs over time
     deploy_model = False
 
-    classification_label_column = "class"
     all_columns = [label_column] + feature_columns
 
     training_data = download_from_gcs_op(
@@ -37,30 +36,31 @@ def train_tabular_classification_logistic_regression_model_using_Scikit_learn_pi
         #replacement_type_name="float",
     ).outputs["transformed_table"]
 
-    classification_training_data = binarize_column_using_Pandas_on_CSV_data_op(
-        table=training_data,
-        column_name=label_column,
-        predicate="> 0",
-        new_column_name=classification_label_column,
-    ).outputs["transformed_table"]
-
-    model = train_logistic_regression_model_using_scikit_learn_from_CSV_op(
-        dataset=classification_training_data,
-        label_column_name=classification_label_column,
-        # Optional:
-        #penalty="l2",
-        #solver="lbfgs",
-        #max_iterations=100,
-        #multi_class_mode="auto",
-        #random_seed=0,
-    ).outputs["model"]
-
-    vertex_model_name = upload_Scikit_learn_pickle_model_to_Google_Cloud_Vertex_AI_op(
-        model=model,
-    ).outputs["model_name"]
-
     # Deploying the model might incur additional costs over time
     if deploy_model:
+        classification_label_column = "class"
+        classification_training_data = binarize_column_using_Pandas_on_CSV_data_op(
+            table=training_data,
+            column_name=label_column,
+            predicate="> 0",
+            new_column_name=classification_label_column,
+        ).outputs["transformed_table"]
+
+        model = train_logistic_regression_model_using_scikit_learn_from_CSV_op(
+            dataset=classification_training_data,
+            label_column_name=classification_label_column,
+            # Optional:
+            #penalty="l2",
+            #solver="lbfgs",
+            #max_iterations=100,
+            #multi_class_mode="auto",
+            #random_seed=0,
+        ).outputs["model"]
+
+        vertex_model_name = upload_Scikit_learn_pickle_model_to_Google_Cloud_Vertex_AI_op(
+            model=model,
+        ).outputs["model_name"]
+
         sklearn_vertex_endpoint_name = deploy_model_to_endpoint_op(
             model_name=vertex_model_name,
         ).outputs["endpoint_name"]
